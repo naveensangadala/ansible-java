@@ -7,7 +7,7 @@
          src: /tmp/jdk-8u111-linux-x64.tar.gz
          dest: /opt/jdk-8u111-linux-x64.tar.gz
      
-     - name: Unarchive the tar file
+     - name: Unarchive claimsassure.zip
        unarchive:
          src: /opt/jdk-8u111-linux-x64.tar.gz
          dest: /opt
@@ -84,7 +84,7 @@
 
      - shell: echo JRE_HOME is $JRE_HOME
        environment:
-           JAVA_HOME: /usr/jdk1.8.0_111
+           JRE_HOME: /usr/jdk1.8.0_111/jre
        register: jre_out
 
      - debug: var=jre_out
