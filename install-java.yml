@@ -1,0 +1,91 @@
+---
+- hosts: test-node
+  gather_facts: yes
+  tasks:
+     - name: copy file from ansible-master to node
+       copy:
+         src: /tmp/jdk-8u111-linux-x64.tar.gz
+         dest: /opt/jdk-8u111-linux-x64.tar.gz
+     
+     - name: Unarchive claimsassure.zip
+       unarchive:
+         src: /opt/jdk-8u111-linux-x64.tar.gz
+         dest: /opt
+         remote_src: yes
+       register: binaries
+
+     - name: check for jdk 
+       stat: path=/usr/jdk-8u111-linux-x64.tar.gz
+       register: jdk
+
+     - name: fail if already run on host
+       fail: msg="This host has already had this playbook run against it"
+       when: jdk.stat.exists
+
+     - name: moving java tar files to user dir
+       command: mv /opt/jdk1.8.0_111 /usr/
+#       when: binaries is skipped
+
+     - name: moving java tar files to user dir
+       command: mv /opt/jdk-8u111-linux-x64.tar.gz /usr/
+#       when: binaries is skipped
+
+     - name: set alternatives for java
+       command: alternatives --install /usr/bin/java java /usr/jdk1.8.0_111/bin/java 1
+
+     - name: alternatives for jar
+       command: alternatives --install /usr/bin/jar jar /opt/jdk1.8.0_201/bin/jar 1
+
+     - name: alternatives for javac
+       command: alternatives --install /usr/bin/javac javac /opt/jdk1.8.0_201/bin/javac 1
+    
+     - name: set alternatives for jar
+       command: alternatives --set jar /opt/jdk1.8.0_201/bin/jar
+    
+     - name: set alternatives for javac
+       command: alternatives --set javac /opt/jdk1.8.0_201/bin/javac
+    
+     - name: configuring alternatives
+       command: alternatives --list
+
+     - name: Check if java is installed
+       command: java -version
+       become_user: root
+       register: java_result
+       ignore_errors: True
+
+     - name: Checking Java Verion on Target host
+       debug:
+          msg: "Java version is:{{java_result.stderr_lines}}"
+
+     - debug:
+         msg: "Failed - Java is not installed"
+       when: java_result is failed
+
+     - debug:
+         msg: "Success - Java is installed"
+       when:  java_result is success
+     
+#     - name: configuring alternatives
+#       command: export JAVA_HOME=/usr/jdk1.8.0_111
+
+#     - name: configuring alternatives
+#       command: export JRE_HOME=/usr/jdk1.8.0_111/jre
+
+#     - name: configuring alternatives
+#       command: export PATH=$PATH:/usr/jdk1.8.0_111/bin:/usr/jdk1.8.0_111/jre/bin
+
+     - shell: echo JAVA_HOME is $JAVA_HOME
+       environment:
+           JAVA_HOME: /usr/jdk1.8.0_111
+       register: shellout
+    
+     - debug: var=shellout
+
+     - shell: echo JRE_HOME is $JRE_HOME
+       environment:
+           JAVA_HOME: /usr/jdk1.8.0_111
+       register: jre_out
+
+     - debug: var=jre_out
+
