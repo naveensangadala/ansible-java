@@ -1,5 +1,5 @@
 [localhost]
-13.233.142.31
+local host ip address 
 
 [test-node]
-13.233.142.118
+target-host  ip address
